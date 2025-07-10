@@ -66,41 +66,34 @@ def update_snake_body(snake_body, snake_position, ate_food):
         snake_body.pop()
     return snake_body
 
+def get_line_wrap(text, font, width):
+    i = 1
+    while font.size(text[:i])[0] < width and i < len(text):
+        i += 1
+    if i < len(text):
+        i = text.rfind(" ", 0, i) + 1
+    return i
+
+def render_line(screen, text, font, color, rect, aa=False, bkg=None):
+    if bkg:
+        image = font.render(text, 1, color, bkg)
+        image.set_colorkey(bkg)
+    else:
+        image = font.render(text, aa, color)
+    screen.blit(image, (rect.left, rect.top))
+
 def draw_text(screen, text, font, color, rect, aa=False, bkg=None):
     y = rect.top
     line_spacing = -2
-
-    # get the height of the font
     font_height = font.size("Tg")[1]
 
     while text:
-        i = 1
-
-        # determine if the row of text will be outside our area
         if y + font_height > rect.bottom:
             break
-
-        # determine maximum width of line
-        while font.size(text[:i])[0] < rect.width and i < len(text):
-            i += 1
-
-        # if we've wrapped the text, then adjust the wrap to the last word      
-        if i < len(text): 
-            i = text.rfind(" ", 0, i) + 1
-
-        # render the line and blit it to the screen
-        if bkg:
-            image = font.render(text[:i], 1, color, bkg)
-            image.set_colorkey(bkg)
-        else:
-            image = font.render(text[:i], aa, color)
-
-        screen.blit(image, (rect.left, y))
+        i = get_line_wrap(text, font, rect.width)
+        render_line(screen, text[:i], font, color, pygame.Rect(rect.left, y, rect.width, font_height), aa, bkg)
         y += font_height + line_spacing
-
-        # remove the text we just blitted
         text = text[i:]
-
     return text
 
 def draw_game_elements(screen, snake_body, food_position, snake_block):
