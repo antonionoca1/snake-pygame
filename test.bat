@@ -1,1 +1,1 @@
-C:/Users/anton/Documents/projects/snake-pygame/.venv/Scripts/python.exe -m unittest test_domain.py test_drawing.py test_game.py
+C:/Users/anton/Documents/projects/snake-pygame/.venv/Scripts/python.exe -m unittest tests/test_domain.py tests/test_drawing.py tests/test_game.py
