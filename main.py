@@ -66,10 +66,42 @@ def update_snake_body(snake_body, snake_position, ate_food):
         snake_body.pop()
     return snake_body
 
-def draw_text(screen, text, font, color, position):
-    """Renders and draws text on the screen."""
-    text_surface = font.render(text, True, color)
-    screen.blit(text_surface, position)
+def draw_text(screen, text, font, color, rect, aa=False, bkg=None):
+    y = rect.top
+    line_spacing = -2
+
+    # get the height of the font
+    font_height = font.size("Tg")[1]
+
+    while text:
+        i = 1
+
+        # determine if the row of text will be outside our area
+        if y + font_height > rect.bottom:
+            break
+
+        # determine maximum width of line
+        while font.size(text[:i])[0] < rect.width and i < len(text):
+            i += 1
+
+        # if we've wrapped the text, then adjust the wrap to the last word      
+        if i < len(text): 
+            i = text.rfind(" ", 0, i) + 1
+
+        # render the line and blit it to the screen
+        if bkg:
+            image = font.render(text[:i], 1, color, bkg)
+            image.set_colorkey(bkg)
+        else:
+            image = font.render(text[:i], aa, color)
+
+        screen.blit(image, (rect.left, y))
+        y += font_height + line_spacing
+
+        # remove the text we just blitted
+        text = text[i:]
+
+    return text
 
 def draw_game_elements(screen, snake_body, food_position, snake_block):
     """Draws all game elements on the screen."""
@@ -81,8 +113,13 @@ def draw_game_elements(screen, snake_body, food_position, snake_block):
 def show_screen(screen, title, subtitle, font, clock, color=(255, 255, 255)):
     """Displays a generic screen with a title and subtitle, waiting for a key press."""
     screen.fill((0, 0, 0))
-    draw_text(screen, title, font, color, [screen.get_width() / 6, screen.get_height() / 4])
-    draw_text(screen, subtitle, font, color, [screen.get_width() / 6, screen.get_height() / 2])
+    
+    title_rect = pygame.Rect(screen.get_width() / 6, screen.get_height() / 4, screen.get_width() * 2 / 3, screen.get_height() / 4)
+    draw_text(screen, title, font, color, title_rect)
+
+    subtitle_rect = pygame.Rect(screen.get_width() / 6, screen.get_height() / 2, screen.get_width() * 2 / 3, screen.get_height() / 2)
+    draw_text(screen, subtitle, font, color, subtitle_rect)
+    
     pygame.display.update()
     
     waiting = True
@@ -141,7 +178,7 @@ def game_loop(screen):
         snake_body = update_snake_body(snake_body, snake_position, ate_food)
 
         draw_game_elements(screen, snake_body, food_position, snake_block)
-        draw_text(screen, f"Score: {score}", font, (255, 255, 255), [10, 10])
+        draw_text(screen, f"Score: {score}", font, (255, 255, 255), pygame.Rect(10, 10, 200, 50))
         pygame.display.update()
 
         if game_over:
